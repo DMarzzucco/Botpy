@@ -56,3 +56,4 @@ async def zeit(ctx):
     await ctx.send(f"Die Zeit ist {zeit}")
     print ('zeit')
     
+# t0k3n aus README (</>)
