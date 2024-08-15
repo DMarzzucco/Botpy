@@ -1,21 +1,33 @@
 import discord
 from discord.ext import commands
 import os, asyncio
+from dotenv import load_dotenv
 
-#import all of the cogs
-from help_cog import help_cog
-from music_cog import music_cog
+load_dotenv()
+#import all the cogs
+from cogs.music import MusicCogs
 
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix='/', intents=intents)
+bot = commands.Bot(command_prefix='<', intents=intents)
 
 #remove the default help command so that we can write out own
 bot.remove_command('help')
 
-async def main():
-    async with bot:
-        await bot.add_cog(help_cog(bot))
-        await bot.add_cog(music_cog(bot))
-        await bot.start(os.getenv['TOKEN'])
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user.name}')
+    print ("bot is running")
+    await bot.change_presence(activity=discord.Game(f"type{bot.command_prefix}help"))
 
-asyncio.run(main())
+async def setup_cogs():
+     bot.add_cog(MusicCogs(bot))
+
+async def main():
+    await setup_cogs()
+    token = os.getenv('TOKEN')
+    if token is None:
+        raise  ValueError("The token is failed")
+    await bot.start(token)
+
+if __name__ == "__main__":
+    asyncio.run(main())
