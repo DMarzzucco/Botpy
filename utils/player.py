@@ -66,7 +66,7 @@ class Player:
                 song = data["url"]
                 try:
                     voice_utils.vc.play(
-                        discord.FFmpegPCMAudio(song, executable="ffmpeg.exe", **youtube_utils.FFMPEG_OPTIONS),
+                        discord.FFmpegPCMAudio(song, executable="ffmpeg", **youtube_utils.FFMPEG_OPTIONS),
                         after=lambda e: asyncio.run_coroutine_threadsafe(
                             self.play_next(ctx, bot, voice_utils, youtube_utils), bot.loop).result())
                     await ctx.send("Now playing:" + data.get("title", "Unknown Title"))
@@ -85,12 +85,21 @@ class Player:
             self.is_playing = True
             m_url = self.music_queue[0][0]['source']
             self.music_queue.pop(0)
-            loop = asyncio.get_event_loop()
-            data = await loop.run_in_executor(None, lambda: youtube_utils.ytdl.extract_info(m_url, download=False))
-            song = data['url']
-            voice_utils.vc.play(discord.FFmpegPCMAudio(song, executable="ffmpeg.exe", **youtube_utils.FFMPEG_OPTIONS),
-                                after=lambda e: asyncio.run_coroutine_threadsafe(
-                                    self.play_next(ctx, bot, voice_utils, youtube_utils), bot.loop))
+            try:
+                loop = asyncio.get_event_loop()
+                data = await loop.run_in_executor(None, lambda: youtube_utils.ytdl.extract_info(m_url, download=False))
+                song = data['url']
+                if song:
+                    voice_utils.vc.play(
+                        discord.FFmpegPCMAudio(song, executable="ffmpeg", **youtube_utils.FFMPEG_OPTIONS),
+                        after=lambda e: asyncio.run_coroutine_threadsafe(
+                            self.play_next(ctx, bot, voice_utils, youtube_utils), bot.loop))
+                    await  ctx.send("Could not retrieve the song url")
+                    self.is_playing = False
+            except Exception as e:
+                print(f"Error playing the next song: {e}")
+                await ctx.send("Error playing the next song")
+                self.is_playing = False
         else:
             self.is_playing = False
 
