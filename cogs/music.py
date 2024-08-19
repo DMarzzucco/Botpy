@@ -1,3 +1,5 @@
+from encodings.aliases import aliases
+
 import discord
 from discord.ext import commands
 
@@ -44,7 +46,7 @@ class MusicCogs(commands.Cog):
     async def skip(self, ctx):
         if self.voice_utils.vc:
             self.voice_utils.vc.stop()
-            await self.player.play_music(ctx, self.voice_utils, self.youtube_utils, self.bot)
+            await self.player.play_next(ctx, self.voice_utils, self.youtube_utils, self.bot)
 
     @commands.command(name="queue", aliases=["q"], help="Display the current songs is queue")
     async def queue(self, ctx):
@@ -61,8 +63,9 @@ class MusicCogs(commands.Cog):
     @commands.command(name="stop", aliases=["l"], help="disconnects the queue")
     async def stop(self, ctx):
         self.player.stop(self.voice_utils)
+        await ctx.send ("The song was disconnected")
 
-    @commands.command(name="remove", help=" Removes the last song added to the queue")
+    @commands.command(name="remove", aliases =["d"], help=" Removes the last song added to the queue")
     async def remove(self, ctx):
         if self.player.remove_last_song():
             await ctx.send("last song wa removed")
